@@ -1,32 +1,26 @@
-const express = require('express');
+// Carrega as variáveis de ambiente do arquivo .env
+require("dotenv").config();
+
+// Importação dos módulos necessários
+const express = require("express");
+const productsRoutes = require("./src/routes/products");
+
+// Inicialização do aplicativo Express
 const app = express();
 
-app.use(express.json())
+// Definição da porta do servidor, com um valor padrão
+const PORT = process.env.PORT || 3000;
 
-const PORT = 1000;
-const products = []
+// Middlewares
+// Habilita o parsing de JSON no corpo das requisições
+app.use(express.json());
 
-app.get("/", (req, res) => {
-    res.send("Olá Pedro");
-});
+// Rotas
+// Define o uso das rotas de produtos
+app.use(productsRoutes);
 
-app.post("/products", (req, res) => {
-    // descontruçaõ.
-    const { name, category, price } = req.body;
-    // extrai do corpo da requisição as informações que quero.
-
-    products.push({ name, category, price })
-
-
-    res.status(201).send({
-        message: "produto cadastrado com sucesso"
-    })
-})
-
-app.get("/products", (req, res) => {
-    res.send(products)
-})
-
+// Inicialização do Servidor
+// O servidor começa a escutar as requisições na porta definida
 app.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+    console.log(`Servidor rodando em: http://localhost:${PORT}`);
 });
