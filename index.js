@@ -4,6 +4,8 @@ require("dotenv").config();
 // Importação dos módulos necessários
 const express = require("express");
 const productsRoutes = require("./src/routes/products");
+const categoriesRoutes = require("./src/routes/categories");
+require("./src/models")
 
 // Inicialização do aplicativo Express
 const app = express();
@@ -18,6 +20,9 @@ app.use(express.json());
 // Rotas
 // Define o uso das rotas de produtos
 app.use(productsRoutes);
+
+app.use(categoriesRoutes);
+
 
 // Inicialização do Servidor
 // O servidor começa a escutar as requisições na porta definida
