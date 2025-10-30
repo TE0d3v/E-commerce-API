@@ -1,8 +1,17 @@
-require("dotenv").config()
+require("dotenv").config();
 
-const pg = require("pg")
-const db = new pg.Pool({
-    connectionString: process.env.DB_URI
-})
+const { Sequelize } = require("sequelize")
 
-module.exports = db;
+// sempre que houver um new significa que algo está sendo instanciado
+const sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
+    {
+        host: process.env.DB_HOST,
+        dialect: "postgres",
+        port: process.env.DB_PORT
+    }
+)
+
+module.exports = sequelize;

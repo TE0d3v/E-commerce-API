@@ -6,6 +6,4 @@ const productsMiddlewares = require("../middlewares/products");
 
 router.post("/products", productsMiddlewares.validateInsertProduct, productsController.insertProduct);
 
-router.get("/products", productsController.getAllProducts);
-
-module.exports = router; 
+module.exports = router;
