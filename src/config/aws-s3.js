@@ -12,7 +12,7 @@ const s3Client = new S3Client({
     }
 });
 
-const uploadFile = multer({
+const upload = multer({
     storage: multerS3({
         s3: s3Client,
         bucket: process.env.AWS_S3_BUCKET,
@@ -39,6 +39,6 @@ const uploadFile = multer({
 })
 
 module.exports = {
-    s3Client,
-    uploadFile
+    upload,
+    s3Client
 }

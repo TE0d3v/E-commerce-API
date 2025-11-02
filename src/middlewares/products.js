@@ -1,32 +1,19 @@
-const { upload } = require("../config/aws-s3");
+const multer = require("multer");
 const { Categories } = require("../models");
 
-// async function processImageUpload(req, res) {
-//     return new Promise((resolve, rejected) => {
-//         upload.single("image")(req, res, (err) => {
-//             if (err) {
-//                 rejected(err);
-//             } else {
-//                 resolve()
-//             }
-//         })
-//     })
-// }
+const upload = multer({ storage: multer.memoryStorage() });
 
-async function validateInsertProduct(req, res, next) {
-
-    // try {
-    //     await processImageUpload(req, res)
-
-    //     if(req.file && req.file.location){
-    //         req.body.image_url = req.file.location
-    //     }
-    // } catch (error) {
-    //     return res.status(500).send({
-    //         error: error.message // "erro ao fazer upload da imagem"
-    //     })
-    // }
-
+async function validateInsertProduct(req, res, next){
+    await new Promise((resolve, reject) => {
+        upload.any("images")(req, res, (err) => {
+            if(err){
+                reject(err)
+            } else {
+                resolve();
+            }
+        })
+    })
+    
     const {
         name,
         price,
@@ -36,13 +23,13 @@ async function validateInsertProduct(req, res, next) {
         return_policy
     } = req.body;
 
-    if (!name || !price || !category_id | !shipping || !warranty || !return_policy) {
+    if(!name || !price || !category_id | !shipping || !warranty || !return_policy){
         return res.status(400).send({
             error: "Todos os campos são obrigatórios"
         })
     }
 
-    if (name.length > 255) {
+    if(name.length > 255){
         return res.status(400).send({
             error: "Nome não pode ter mais de 255 caracteres"
         })
@@ -51,7 +38,7 @@ async function validateInsertProduct(req, res, next) {
     try {
         const category = await Categories.findByPk(category_id)
 
-        if (!category) {
+        if(!category){
             return res.status(400).send({
                 error: "Categoria não encontrada"
             })
@@ -62,7 +49,7 @@ async function validateInsertProduct(req, res, next) {
         })
     }
 
-    req.body.return = return_policy
+    req.body.return = return_policy;
 
     next()
 }
@@ -70,23 +57,3 @@ async function validateInsertProduct(req, res, next) {
 module.exports = {
     validateInsertProduct
 }
-
-// async function validateInsertProduct(req, res, next) {
-//     const { name, category, price } = req.body;
-
-//     if (!name || !category || !price) {
-//         return res.status(400).send({
-//             error: "Nome, Categoria e Preço são obrigatórios"
-//         })
-//     }
-
-//     if (category.length > 255) {
-//         return res.status(400).send({
-//             error: "Categoria não pode ter mais de 255 caracteres"
-//         })
-//     }
-
-//     next()
-// }
-
-// module.exports = { validateInsertProduct }

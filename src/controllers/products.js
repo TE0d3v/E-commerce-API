@@ -1,10 +1,26 @@
-const productsModel = require("../models/products")
+const { uploadAndSaveProductsImages } = require("../helpers/product-images-upload")
+const { Products } = require("../models")
+
 async function insertProduct(req, res) {
     try {
-        await productsModel.insertProduct(req.body)
+        const productData = {
+            ...req.body
+        }
+
+        const product = await Products.create(productData)
+
+        let images = [];
+        try {
+            images = await uploadAndSaveProductsImages(product.id, req.files)
+        } catch (error) {
+            console.error("Erro ao upload das imagens", error.message)
+        }
 
         return res.status(201).send({
-            message: "Produto criado com sucesso"
+            message: "Produto criado com sucesso",
+            images: images.map(img => ({
+                url: img.url
+            }))
         })
     } catch (error) {
         return res.status(500).send({
@@ -14,19 +30,6 @@ async function insertProduct(req, res) {
 }
 // se existe erro no controler dentro de um catch  conta como erro de servidor por isso o status 500
 
-async function getAllProducts(req, res) {
-    try {
-        const products = await productsModel.getAllProducts()
-
-        return res.send( products )
-    } catch (error) {
-        return res.status(500).send({
-            error: error.message
-        })
-    }
-}
-
 module.exports = {
-    insertProduct,
-    getAllProducts
+    insertProduct
 }

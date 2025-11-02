@@ -1,68 +1,83 @@
-/**
- *  processa upload de multiplas imagens para o S3 (badge/balde da aws)
- *  @param {Object} req - request object
- *  @param {Object} res - response object
- *  @returns {Promise<Array>} - array de arquivos processados  
- */
+const { PutObjectCommand } = require("@aws-sdk/client-s3");
+const { upload, s3Client } = require("../config/aws-s3");
+const { ProductsImages } = require("../models");
 
-const { upload } = require("../config/aws-s3")
-const { ProductsImages } = require("../models")
+async function uploadFileToS3(file){
+    const fileName = `products/${Date.now()}-${file.originalname}`;
 
-async function processMultipleImagesUpload(req, res) {
-    return new Promisse((resolve, reject) => {
-        upload.array("images", 5)(req, res, (err) => {
-            if (err) {
-                reject(err)
-            } else {
-                resolve(req.files || [])
-            }
-        })
+    const command = new PutObjectCommand({
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: fileName,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        ACL: "public-read"
     })
-}
-//funcões callback
-//em promisses não se pode usar return por isso é usado if´s e else´s
 
-/**
- * Salva as imagens na tabela de products images 
- * @param {String} productId - ID do produto
- * @param {Array} images - array de url de imagens
- * @returns {Promisse<Array>} - 
- */
-async function saveProductsImages(productId, images) {
-    if (!images || images.length === 0){
+    await s3Client.send(command);
+
+    const region = process.env.AWS_REGION || "us-east-1";
+
+    const url = `https://${process.env.AWS_S3_BUCKET}.s3.${region}.amazonaws.com/${fileName}`
+
+    return url;
+}
+
+/** 
+ * Processa upload de múltiplas imagens para o s3
+ * @param {Array} files - Array de arquivos
+ * @returns {Promise<Array>} - Array de arquivos processados
+*/
+async function processMultipleImagesUpload(files){
+    if(!files || files.length === 0){
         return [];
     }
 
-    const imagesData = images.map(image => ({
-        product_id: productId,
-        url: image.location //url do S3
-    }))
+    const uploadPromises = files.map(file => uploadFileToS3(file));
+    const urls = await Promise.all(uploadPromises)
 
-    const savedImages = await ProductsImages.bulkCreate(imagesData)
-    return savedImages;
+    return urls;
 }
 
 /**
- * processa uploas completo: faz upload no s3 e salva no banco
- * @param {String} productId - id do produto
- * @param {Object} req - request object
- * @param {Object} res - response object
- * @returns {Promise<Array>} - array de imagens criadas
+ * Salva as imagens na tabela ProductsImages
+ * @param {String} productId - ID do produto
+ * @param {Array} urls - Array de URLs das imagens
+ * @returns {Promise<Array>} - array de imagens salvas
  */
- async function uploadAndSaveProductsImages(productId, req, res){
-    try {
-        const files = await processMultipleImagesUpload(req, res);
+async function saveProductsImages(productId, urls){
+    if(!urls || urls.length === 0){
+        return [];
+    }
 
-        const images = await saveProductsImages(productId, files)
+    const imagesData = urls.map(image => ({
+        product_id: productId,
+        url: image
+    }))
+
+    const savedImages = await ProductsImages.bulkCreate(imagesData);
+    return savedImages
+}
+
+/**
+ * Processa upload completo: faz upload no s3 e salva no banco
+ * @param {String} productId - ID do produto
+ * @param {Array} files - Array de arquivos
+ * @returns {Promise<Array>} - Array de imagens criadas
+ */
+async function uploadAndSaveProductsImages(productId, files){
+    try {
+        const urls = await processMultipleImagesUpload(files);
+
+        const images = await saveProductsImages(productId, urls);
 
         return images;
     } catch (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
     }
- }
+}
 
- module.exports = {
-    saveProductsImages,
+module.exports = {
     processMultipleImagesUpload,
+    saveProductsImages,
     uploadAndSaveProductsImages
- }
+}

@@ -17,5 +17,4 @@ async function insertCategory(req, res){
 module.exports = {
     insertCategory
 };
-
 // mandar erros mapeados para o frontend nunca é uma boa ideia somente em situações específicas
