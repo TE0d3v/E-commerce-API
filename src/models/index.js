@@ -1,7 +1,8 @@
 const sequelize = require("../config/database");
-const Products = require("../models/products");
-const Categories = require("../models/categories");
-const ProductsImages = require("../models/products_images");
+const Products = require("./products");
+const Categories = require("./categories");
+const ProductsImages = require("./products_images");
+const Users = require("./users")
 
 
 
@@ -14,5 +15,6 @@ sequelize.sync({ alter: true})
 module.exports = {
     Products,
     Categories,
-    ProductsImages
+    ProductsImages,
+    Users
 }
