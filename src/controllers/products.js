@@ -30,6 +30,19 @@ async function insertProduct(req, res) {
 }
 // se existe erro no controler dentro de um catch  conta como erro de servidor por isso o status 500
 
+async function getAllProducts(req, res){
+    try {
+        const products = await Products.findAll()
+
+        return res.send(products)
+    } catch (error) {
+        return res.status(500).send({
+            error: error.message
+        })
+    }
+}
+
 module.exports = {
-    insertProduct
+    insertProduct,
+    getAllProducts
 }

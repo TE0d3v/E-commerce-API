@@ -7,6 +7,7 @@ const productsRoutes = require("./src/routes/products");
 const categoriesRoutes = require("./src/routes/categories");
 const usersRoutes = require("./src/routes/users");
 const authRoutes = require("./src/routes/auth")
+const cors = require("cors")
 require("./src/models")
 
 // Inicialização do aplicativo Express
@@ -18,6 +19,7 @@ const PORT = process.env.PORT || 3000;
 // Middlewares
 // Habilita o parsing de JSON no corpo das requisições
 app.use(express.json());
+app.use(cors())
 
 // Rotas
 // Define o uso das rotas de produtos

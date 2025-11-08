@@ -15,7 +15,12 @@ async function login(req, res) {
             }
         )
 
-        return res.send({token})
+        return res.send({ token, user:{
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        } })
     } catch (error) {
         return res.status(500).send({
             error: error.message
