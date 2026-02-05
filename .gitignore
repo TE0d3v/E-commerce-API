@@ -4,3 +4,5 @@ anotacoes
 node_modules
 anotações.excalidraw
 .env
+Dockerfile
+docker-compose.yml
